@@ -1,0 +1,85 @@
+sources:
+  - name: india_launch
+    country: India
+    event: Product Launch
+    canonical_mappings:
+      customer_name:
+        aliases: [Name, Full_Name, Customer_Name]
+        required: true
+      email:
+        aliases: [Email, Email_Address]
+        required: true
+      product_code:
+        aliases: [Product, Product_Code, Product_ID]
+        required: true
+      budget_code:
+        aliases: [Budget_Code]
+        required: false
+      budget:
+        aliases: [Budget]
+        required: false
+      checklist_code:
+        aliases: [Checklist, Checklist_Code]
+        required: false
+      campaign_id:
+        aliases: [Campaign_ID, CRM_ID]
+        required: false
+
+  - name: uae_launch
+    country: UAE
+    event: Product Launch
+    canonical_mappings:
+      customer_name:
+        aliases: [Full_Name, Name]
+        required: true
+      email:
+        aliases: [Email_Address, Email]
+        required: true
+      product_code:
+        aliases: [Product_Code, Product]
+        required: true
+      budget_code:
+        aliases: [Budget_Code]
+        required: false
+      budget:
+        aliases: [Allocated_Budget]
+        required: false
+      checklist_code:
+        aliases: [Checklist_Status, Checklist_Code]
+        required: false
+      campaign_id:
+        aliases: [CRM_ID, Campaign_ID]
+        required: false
+
+target_mappings:
+  salesforce_object: Campaign_Response__c
+  external_id_field: External_ID__c
+  mappings:
+    customer_name: Customer_Name__c
+    email: Email__c
+    product_sfdc_id: Product__c
+    budget_sfdc_id: Budget__c
+    checklist_sfdc_id: Checklist__c
+    campaign_id: Campaign__c
+    event: Event__c
+    country: Country__c
+    record_hash: External_ID__c
+
+lookups:
+  - name: product_lookup
+    source_field: product_code
+    reference: products
+    reference_key: ProductCode
+    output_field: product_sfdc_id
+
+  - name: budget_lookup
+    source_field: budget_code
+    reference: budgets
+    reference_key: Budget_Code__c
+    output_field: budget_sfdc_id
+
+  - name: checklist_lookup
+    source_field: checklist_code
+    reference: checklists
+    reference_key: Checklist_Code__c
+    output_field: checklist_sfdc_id

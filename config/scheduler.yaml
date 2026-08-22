@@ -1,0 +1,6 @@
+scheduler:
+  enabled: true
+  jobs:
+    - name: daily_salesforce_etl
+      cron: "0 2 * * *"
+      timezone: "UTC"

@@ -1,0 +1,13 @@
+validations:
+  types:
+    email: email
+    budget: numeric
+  business_rules:
+    - field: budget
+      operator: ">="
+      value: 0
+      message: "Budget cannot be negative"
+  duplicate_key:
+    - email
+    - product_code
+    - event

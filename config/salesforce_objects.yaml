@@ -1,0 +1,24 @@
+objects:
+  - name: accounts
+    salesforce_object: Account
+    output_file: 01_accounts.xlsx
+    soql: |
+      SELECT Id, Name, AccountNumber FROM Account WHERE IsDeleted = false
+
+  - name: products
+    salesforce_object: Product2
+    output_file: 02_products.xlsx
+    soql: |
+      SELECT Id, Name, ProductCode, Family FROM Product2 WHERE IsActive = true
+
+  - name: budgets
+    salesforce_object: Budget__c
+    output_file: 03_budgets.xlsx
+    soql: |
+      SELECT Id, Name, Budget_Code__c, Allocated_Amount__c FROM Budget__c WHERE IsDeleted = false
+
+  - name: checklists
+    salesforce_object: Checklist__c
+    output_file: 04_checklists.xlsx
+    soql: |
+      SELECT Id, Name, Checklist_Code__c, Status__c FROM Checklist__c WHERE IsDeleted = false

@@ -1,0 +1,9 @@
+transformations:
+  customer_name:
+    operation: title_case
+  email:
+    operation: lowercase
+  event:
+    operation: uppercase
+  country:
+    operation: trim
