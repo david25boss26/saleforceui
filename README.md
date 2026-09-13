@@ -198,3 +198,11 @@ To connect to a real Salesforce environment:
 4. Add scopes: `Manage user data via APIs (api)` and `Perform requests at any time (refresh_token, offline_access)`.
 5. Obtain the **Consumer Key** (Client ID) and **Consumer Secret** (Client Secret).
 6. Fill in the `.env` variables and set `MOCK_SALESFORCE=false`.
+7. 00DbW000004CdWL!TEST
+8. AQEAQBfwKk.TEST
+9. 6nN452sEhMaFo6mP9p8Oo2kIK60Ik4EURxRm4TEST
+10. .V5rkExCZOdH88jw7eIiDw73aQkP5Y4z0TEST
+11. _3_flGvlCCEPcYKTEST
+12. TEST
+13. TEST
+14. 
