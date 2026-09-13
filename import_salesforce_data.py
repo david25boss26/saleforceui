@@ -64,6 +64,7 @@ def query_salesforce(
     username: str = None,
     password: str = None,
     security_token: str = None,
+    session_id: str = None,
     domain: str = None,
     instance_url: str = None,
     client_id: str = None,
@@ -71,10 +72,12 @@ def query_salesforce(
 ) -> pd.DataFrame:
     """
     Connects to Salesforce, runs the SOQL query, and returns a Pandas DataFrame.
+    Supports session_id direct auth, OAuth2, and username/password.
     """
     from simple_salesforce import Salesforce
 
     # Gather credentials from args or env
+    sess_id = session_id or os.getenv("SALESFORCE_SESSION_ID")
     user = username or os.getenv("SALESFORCE_USERNAME")
     pwd = password or os.getenv("SALESFORCE_PASSWORD")
     token = security_token or os.getenv("SALESFORCE_SECURITY_TOKEN", "")
@@ -83,29 +86,41 @@ def query_salesforce(
     csec = client_secret or os.getenv("SALESFORCE_CLIENT_SECRET")
     inst_url = instance_url or os.getenv("SALESFORCE_INSTANCE_URL")
 
-    if not user or not pwd:
-        raise ValueError(
-            "Salesforce credentials missing! Please provide --username and --password "
-            "or set SALESFORCE_USERNAME and SALESFORCE_PASSWORD in your environment / .env file."
-        )
+    # If session_id is provided, connect directly without username/password
+    if sess_id:
+        logger.info("Connecting to Salesforce using direct Session ID / Access Token...")
+        inst = inst_url
+        if not inst and dom:
+            if not dom.startswith("http"):
+                inst = f"https://{dom}.salesforce.com" if not dom.endswith(".com") else f"https://{dom}"
+            else:
+                inst = dom
+        sf = Salesforce(session_id=sess_id, instance_url=inst)
+    else:
+        if not user or not pwd:
+            raise ValueError(
+                "Salesforce credentials missing! Please provide --session-id OR (--username and --password), "
+                "or set them in your environment / .env file."
+            )
 
-    logger.info(f"Connecting to Salesforce (User: {user}, Domain: {dom})...")
+        logger.info(f"Connecting to Salesforce (User: {user}, Domain: {dom})...")
 
-    kwargs: Dict[str, Any] = {
-        "username": user,
-        "password": pwd,
-    }
-    if dom:
-        kwargs["domain"] = dom
-    if inst_url:
-        kwargs["instance_url"] = inst_url
-    if token:
-        kwargs["security_token"] = token
-    if cid and csec:
-        kwargs["client_id"] = cid
-        kwargs["client_secret"] = csec
+        kwargs: Dict[str, Any] = {
+            "username": user,
+            "password": pwd,
+        }
+        if dom:
+            kwargs["domain"] = dom
+        if inst_url:
+            kwargs["instance_url"] = inst_url
+        if token:
+            kwargs["security_token"] = token
+        if cid and csec:
+            kwargs["client_id"] = cid
+            kwargs["client_secret"] = csec
 
-    sf = Salesforce(**kwargs)
+        sf = Salesforce(**kwargs)
+
     logger.info("Connected successfully to Salesforce.")
 
     logger.info(f"Executing SOQL query:\n{query.strip()}")
@@ -141,6 +156,7 @@ FROM OCE__Invoice__c
     parser.add_argument("--query", "-q", type=str, default=default_query, help="SOQL query string")
     parser.add_argument("--output", "-o", type=str, default="salesforce_extract.xlsx", help="Output file path (.xlsx or .csv)")
     parser.add_argument("--sheet", "-s", type=str, default="Salesforce Data", help="Excel worksheet name")
+    parser.add_argument("--session-id", "--sid", type=str, default=None, help="Active Salesforce Session ID / Access Token (Bypasses password & token)")
     parser.add_argument("--username", "-u", type=str, default=None, help="Salesforce Username")
     parser.add_argument("--password", "-p", type=str, default=None, help="Salesforce Password")
     parser.add_argument("--token", "-t", type=str, default=None, help="Salesforce Security Token")
@@ -151,6 +167,7 @@ FROM OCE__Invoice__c
     try:
         df = query_salesforce(
             query=args.query,
+            session_id=args.session_id,
             username=args.username,
             password=args.password,
             security_token=args.token,

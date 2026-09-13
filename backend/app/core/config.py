@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     SALESFORCE_USERNAME: Optional[str] = None
     SALESFORCE_PASSWORD: Optional[str] = None
     SALESFORCE_SECURITY_TOKEN: Optional[str] = None
+    SALESFORCE_SESSION_ID: Optional[str] = None
     SALESFORCE_CLIENT_ID: Optional[str] = None
     SALESFORCE_CLIENT_SECRET: Optional[str] = None
     SALESFORCE_LOGIN_URL: str = "https://test.salesforce.com"

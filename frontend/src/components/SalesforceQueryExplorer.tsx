@@ -54,6 +54,7 @@ export default function SalesforceQueryExplorer() {
   const [showAuthOverrides, setShowAuthOverrides] = useState(false);
   
   // Auth Overrides
+  const [sessionId, setSessionId] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [securityToken, setSecurityToken] = useState("");
@@ -84,6 +85,7 @@ export default function SalesforceQueryExplorer() {
         query: soqlQuery,
         limit: 500
       };
+      if (sessionId) payload.session_id = sessionId;
       if (username) payload.username = username;
       if (password) payload.password = password;
       if (securityToken) payload.security_token = securityToken;
@@ -116,6 +118,7 @@ export default function SalesforceQueryExplorer() {
         sheet_name: "Salesforce Data",
         output_filename: `salesforce_export_${Date.now()}.${format === "excel" ? "xlsx" : "csv"}`
       };
+      if (sessionId) payload.session_id = sessionId;
       if (username) payload.username = username;
       if (password) payload.password = password;
       if (securityToken) payload.security_token = securityToken;
@@ -204,45 +207,62 @@ export default function SalesforceQueryExplorer() {
 
         {/* Collapsible Auth Overrides */}
         {showAuthOverrides && (
-          <div className="bg-slate-950/90 border-b border-slate-800 p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs animate-fadeIn">
-            <div>
-              <label className="block text-slate-400 mb-1 font-medium">Domain / Environment</label>
-              <input
-                type="text"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                placeholder="novartis-events-oce--qa.sandbox.my"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-sky-500 focus:outline-none font-mono"
-              />
+          <div className="bg-slate-950/90 border-b border-slate-800 p-5 space-y-3 text-xs animate-fadeIn">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-slate-400 mb-1 font-medium">Domain / Environment</label>
+                <input
+                  type="text"
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                  placeholder="novartis-events-oce--qa.sandbox.my"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-sky-500 focus:outline-none font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-400 mb-1 font-medium">Salesforce Username (Optional)</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="user@novartis.com.oceqa"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-sky-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-400 mb-1 font-medium">Salesforce Password (Optional)</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-sky-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-400 mb-1 font-medium">Security Token (Optional)</label>
+                <input
+                  type="password"
+                  value={securityToken}
+                  onChange={(e) => setSecurityToken(e.target.value)}
+                  placeholder="Security Token"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-sky-500 focus:outline-none"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1 font-medium">Salesforce Username (Optional)</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="user@novartis.com.oceqa"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-sky-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-slate-400 mb-1 font-medium">Salesforce Password (Optional)</label>
+
+            {/* Direct Session ID / Browser Token Alternative */}
+            <div className="pt-2 border-t border-slate-850">
+              <label className="block text-sky-400 mb-1 font-medium flex items-center justify-between">
+                <span>Direct Session ID / Access Token (Bypasses Password & Security Token)</span>
+                <span className="text-[10px] text-slate-500 font-normal">Extract from Browser DevTools / Salesforce Inspector</span>
+              </label>
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-sky-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-slate-400 mb-1 font-medium">Security Token (Optional)</label>
-              <input
-                type="password"
-                value={securityToken}
-                onChange={(e) => setSecurityToken(e.target.value)}
-                placeholder="Security Token"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-sky-500 focus:outline-none"
+                value={sessionId}
+                onChange={(e) => setSessionId(e.target.value)}
+                placeholder="Paste session ID e.g. 00D... or OAuth access token"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sky-300 focus:border-sky-500 focus:outline-none font-mono text-xs"
               />
             </div>
           </div>

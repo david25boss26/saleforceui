@@ -101,6 +101,19 @@ class SalesforceQueryImporter:
 
         from app.integrations.salesforce.client import get_salesforce_client
         
+        # Direct session_id / Access Token
+        if session_id:
+            from simple_salesforce import Salesforce
+            inst = instance_url
+            if not inst and domain:
+                if not domain.startswith("http"):
+                    inst = f"https://{domain}.salesforce.com" if not domain.endswith(".com") else f"https://{domain}"
+                else:
+                    inst = domain
+            logger.info("Connecting to Salesforce via direct Session ID / Access Token")
+            self.sf_client = Salesforce(session_id=session_id, instance_url=inst)
+            return self.sf_client
+
         # If specific credentials passed, initialize a dedicated client
         if username and password:
             from simple_salesforce import Salesforce

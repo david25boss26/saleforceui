@@ -16,6 +16,7 @@ class SOQLQueryRequest(BaseModel):
     username: Optional[str] = None
     password: Optional[str] = None
     security_token: Optional[str] = None
+    session_id: Optional[str] = None
     domain: Optional[str] = None
     limit: Optional[int] = 100 # For preview
 
@@ -28,6 +29,7 @@ class SOQLExportRequest(BaseModel):
     username: Optional[str] = None
     password: Optional[str] = None
     security_token: Optional[str] = None
+    session_id: Optional[str] = None
     domain: Optional[str] = None
 
 
@@ -42,11 +44,12 @@ def run_soql_query(payload: SOQLQueryRequest):
         
         # Connect with provided or default credentials
         client = None
-        if payload.username and payload.password:
+        if payload.session_id or (payload.username and payload.password):
             client = importer.get_client(
                 username=payload.username,
                 password=payload.password,
                 security_token=payload.security_token,
+                session_id=payload.session_id,
                 domain=payload.domain
             )
         
@@ -82,11 +85,12 @@ def export_soql_query(payload: SOQLExportRequest):
         importer = SalesforceQueryImporter()
         
         client = None
-        if payload.username and payload.password:
+        if payload.session_id or (payload.username and payload.password):
             client = importer.get_client(
                 username=payload.username,
                 password=payload.password,
                 security_token=payload.security_token,
+                session_id=payload.session_id,
                 domain=payload.domain
             )
             

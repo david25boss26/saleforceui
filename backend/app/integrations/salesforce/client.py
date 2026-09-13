@@ -180,6 +180,7 @@ def get_salesforce_client(
     username: str = None,
     password: str = None,
     security_token: str = None,
+    session_id: str = None,
     domain: str = None,
     instance_url: str = None,
     client_id: str = None,
@@ -188,7 +189,7 @@ def get_salesforce_client(
 ):
     """
     Returns simple-salesforce Salesforce instance or MockSalesforceClient based on configuration.
-    Accepts optional credential/domain overrides.
+    Supports session_id direct auth, OAuth2, and username/password.
     """
     if force_mock or settings.MOCK_SALESFORCE:
         return MockSalesforceClient()
@@ -196,17 +197,29 @@ def get_salesforce_client(
     try:
         from simple_salesforce import Salesforce
         
+        sess_id = session_id or settings.SALESFORCE_SESSION_ID
+        inst_url = instance_url or settings.SALESFORCE_INSTANCE_URL
         user = username or settings.SALESFORCE_USERNAME
         pwd = password or settings.SALESFORCE_PASSWORD
         token = security_token or settings.SALESFORCE_SECURITY_TOKEN
         cid = client_id or settings.SALESFORCE_CLIENT_ID
         csec = client_secret or settings.SALESFORCE_CLIENT_SECRET
-        inst_url = instance_url or settings.SALESFORCE_INSTANCE_URL
         
         # Determine domain
         dom = domain or settings.SALESFORCE_DOMAIN
         if not dom:
             dom = "test" if settings.SALESFORCE_ENVIRONMENT == "sandbox" else "login"
+
+        # Direct Session ID authentication (from browser or SF CLI)
+        if sess_id:
+            logger.info("Authenticating with Salesforce using direct Session ID / Access Token")
+            inst = inst_url
+            if not inst and dom:
+                if not dom.startswith("http"):
+                    inst = f"https://{dom}.salesforce.com" if not dom.endswith(".com") else f"https://{dom}"
+                else:
+                    inst = dom
+            return Salesforce(session_id=sess_id, instance_url=inst)
 
         if not user or not pwd:
             logger.warning("Salesforce credentials missing, falling back to MockSalesforceClient")
