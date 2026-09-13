@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Pipeline, ETLExecution, ConfigData } from "../types";
+import type { Pipeline, ETLExecution, ConfigData, SOQLQueryResponse, SOQLExportResponse } from "../types";
 
 const API_BASE_URL = "http://localhost:8000/api";
 
@@ -77,8 +77,39 @@ export const apiService = {
     return res.data;
   },
 
+  executeSOQLQuery: async (payload: {
+    query: string;
+    username?: string;
+    password?: string;
+    security_token?: string;
+    domain?: string;
+    limit?: number;
+  }): Promise<SOQLQueryResponse> => {
+    const res = await client.post("/salesforce/query", payload);
+    return res.data;
+  },
+
+  exportSOQLQuery: async (payload: {
+    query: string;
+    output_filename?: string;
+    export_format?: string;
+    sheet_name?: string;
+    username?: string;
+    password?: string;
+    security_token?: string;
+    domain?: string;
+  }): Promise<SOQLExportResponse> => {
+    const res = await client.post("/salesforce/query/export", payload);
+    return res.data;
+  },
+
   getDownloadUrl: (id: string, type: string) => {
     return `${API_BASE_URL}/executions/${id}/download?type=${type}`;
   },
+
+  getExportDownloadUrl: (filepath: string) => {
+    return `${API_BASE_URL}/files/download?filepath=${encodeURIComponent(filepath)}`;
+  },
 };
 export default apiService;
+

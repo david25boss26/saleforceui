@@ -69,3 +69,19 @@ export interface ConfigData {
   transformation_rules: string;
   scheduler: string;
 }
+
+export interface SOQLQueryResponse {
+  status: string;
+  total_records: number;
+  returned_records: number;
+  columns: string[];
+  data: Record<string, any>[];
+}
+
+export interface SOQLExportResponse {
+  status: string;
+  filename: string;
+  filepath: string;
+  download_url: string;
+}
+

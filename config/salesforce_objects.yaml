@@ -22,3 +22,9 @@ objects:
     output_file: 04_checklists.xlsx
     soql: |
       SELECT Id, Name, Checklist_Code__c, Status__c FROM Checklist__c WHERE IsDeleted = false
+
+  - name: oce_invoices
+    salesforce_object: OCE__Invoice__c
+    output_file: 05_oce_invoices.xlsx
+    soql: |
+      SELECT id, OCE__meeting__r.recordtype.name, OCE__MeetingMember__r.OCE__Type__c, OCE__Meeting__r.OCE__OrganizingCountry__c, OCE__MeetingMember__r.OCE__Meeting__r.OCE__Status__c, OCE__PaymentStatus__c, OCE__InvoiceStatus__c FROM OCE__Invoice__c

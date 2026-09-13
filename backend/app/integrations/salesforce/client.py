@@ -28,6 +28,53 @@ MOCK_CHECKLISTS = [
     {"Id": "chk_002", "Name": "Alternative Launch Checklist", "Checklist_Code__c": "CHK_ALT_02", "Status__c": "Draft"},
 ]
 
+MOCK_INVOICES = [
+    {
+        "attributes": {"type": "OCE__Invoice__c", "url": "/services/data/v59.0/sobjects/OCE__Invoice__c/a001"},
+        "Id": "inv_001",
+        "OCE__meeting__r": {
+            "attributes": {"type": "OCE__Meeting__c"},
+            "recordtype": {
+                "attributes": {"type": "RecordType"},
+                "name": "Medical Advisory Board"
+            },
+            "OCE__OrganizingCountry__c": "Switzerland"
+        },
+        "OCE__MeetingMember__r": {
+            "attributes": {"type": "OCE__MeetingMember__c"},
+            "OCE__Type__c": "Speaker",
+            "OCE__Meeting__r": {
+                "attributes": {"type": "OCE__Meeting__c"},
+                "OCE__Status__c": "Completed"
+            }
+        },
+        "OCE__PaymentStatus__c": "Processed",
+        "OCE__InvoiceStatus__c": "Approved"
+    },
+    {
+        "attributes": {"type": "OCE__Invoice__c", "url": "/services/data/v59.0/sobjects/OCE__Invoice__c/a002"},
+        "Id": "inv_002",
+        "OCE__meeting__r": {
+            "attributes": {"type": "OCE__Meeting__c"},
+            "recordtype": {
+                "attributes": {"type": "RecordType"},
+                "name": "Investigator Meeting"
+            },
+            "OCE__OrganizingCountry__c": "Germany"
+        },
+        "OCE__MeetingMember__r": {
+            "attributes": {"type": "OCE__MeetingMember__c"},
+            "OCE__Type__c": "Chairperson",
+            "OCE__Meeting__r": {
+                "attributes": {"type": "OCE__Meeting__c"},
+                "OCE__Status__c": "Closed"
+            }
+        },
+        "OCE__PaymentStatus__c": "Pending",
+        "OCE__InvoiceStatus__c": "Submitted"
+    }
+]
+
 class MockBulkJob:
     def __init__(self, job_id: str, object_name: str, operation: str):
         self.job_id = job_id
@@ -77,8 +124,15 @@ class MockSalesforceClient:
             records = MOCK_BUDGETS
         elif "from checklist__c" in query_lower:
             records = MOCK_CHECKLISTS
+        elif "from oce__invoice__c" in query_lower or "oce__invoice" in query_lower:
+            records = MOCK_INVOICES
         else:
             logger.warning(f"Unknown mock table query: {soql}")
+            # Fallback mock records
+            records = [
+                {"Id": "mock_rec_001", "Name": "Mock Dynamic Record 1"},
+                {"Id": "mock_rec_002", "Name": "Mock Dynamic Record 2"},
+            ]
             
         return {"totalSize": len(records), "done": True, "records": records}
 
@@ -122,34 +176,58 @@ class MockSalesforceClient:
         return self.jobs[job_id].upload_results()
 
 
-def get_salesforce_client():
+def get_salesforce_client(
+    username: str = None,
+    password: str = None,
+    security_token: str = None,
+    domain: str = None,
+    instance_url: str = None,
+    client_id: str = None,
+    client_secret: str = None,
+    force_mock: bool = False
+):
     """
     Returns simple-salesforce Salesforce instance or MockSalesforceClient based on configuration.
+    Accepts optional credential/domain overrides.
     """
-    if settings.MOCK_SALESFORCE:
+    if force_mock or settings.MOCK_SALESFORCE:
         return MockSalesforceClient()
         
     try:
         from simple_salesforce import Salesforce
         
-        # Check credentials
-        if not settings.SALESFORCE_USERNAME or not settings.SALESFORCE_PASSWORD:
+        user = username or settings.SALESFORCE_USERNAME
+        pwd = password or settings.SALESFORCE_PASSWORD
+        token = security_token or settings.SALESFORCE_SECURITY_TOKEN
+        cid = client_id or settings.SALESFORCE_CLIENT_ID
+        csec = client_secret or settings.SALESFORCE_CLIENT_SECRET
+        inst_url = instance_url or settings.SALESFORCE_INSTANCE_URL
+        
+        # Determine domain
+        dom = domain or settings.SALESFORCE_DOMAIN
+        if not dom:
+            dom = "test" if settings.SALESFORCE_ENVIRONMENT == "sandbox" else "login"
+
+        if not user or not pwd:
             logger.warning("Salesforce credentials missing, falling back to MockSalesforceClient")
             return MockSalesforceClient()
             
-        kwargs = {
-            "username": settings.SALESFORCE_USERNAME,
-            "password": settings.SALESFORCE_PASSWORD,
-            "domain": "test" if settings.SALESFORCE_ENVIRONMENT == "sandbox" else "login"
+        kwargs: Dict[str, Any] = {
+            "username": user,
+            "password": pwd,
         }
         
-        if settings.SALESFORCE_SECURITY_TOKEN:
-            kwargs["security_token"] = settings.SALESFORCE_SECURITY_TOKEN
-        if settings.SALESFORCE_CLIENT_ID and settings.SALESFORCE_CLIENT_SECRET:
-            kwargs["client_id"] = settings.SALESFORCE_CLIENT_ID
-            kwargs["client_secret"] = settings.SALESFORCE_CLIENT_SECRET
+        if dom:
+            kwargs["domain"] = dom
+        if inst_url:
+            kwargs["instance_url"] = inst_url
+        if token:
+            kwargs["security_token"] = token
+        if cid and csec:
+            kwargs["client_id"] = cid
+            kwargs["client_secret"] = csec
             
-        logger.info(f"Authenticating with Salesforce ({settings.SALESFORCE_ENVIRONMENT})")
+        logger.info(f"Authenticating with Salesforce (Domain: {dom})")
         return Salesforce(**kwargs)
         
     except Exception as exc:

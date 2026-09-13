@@ -5,6 +5,7 @@ from typing import List, Dict, Any
 from app.core.config import settings
 from app.core.config_manager import ConfigManager
 from app.integrations.salesforce.client import get_salesforce_client
+from app.integrations.salesforce.query_importer import extract_records_to_list
 from app.utils.excel import write_excel_file
 
 logger = logging.getLogger("salesforce-etl.etl.extractor")
@@ -16,7 +17,7 @@ class SalesforceExtractor:
     def extract_reference_data(self) -> Dict[str, str]:
         """
         Executes SOQL queries configured in salesforce_objects.yaml,
-        retrieves records, flattens them, and saves to Excel files.
+        retrieves records, flattens them (including relationship fields), and saves to Excel files.
         
         Returns:
             Dict[object_name, filepath]
@@ -41,11 +42,8 @@ class SalesforceExtractor:
                 result = self.sf_client.query_all(soql)
                 records = result.get("records", [])
                 
-                # Flatten records (remove the 'attributes' key which Salesforce returns)
-                flattened_records = []
-                for r in records:
-                    flat_r = {k: v for k, v in r.items() if k != "attributes"}
-                    flattened_records.append(flat_r)
+                # Recursively flatten records (removing attributes and unrolling relationship dicts)
+                flattened_records = extract_records_to_list(records)
                     
                 # If records is empty, write empty DataFrame with expected columns if possible
                 if not flattened_records:

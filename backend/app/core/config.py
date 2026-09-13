@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     # Salesforce
     MOCK_SALESFORCE: bool = True
     SALESFORCE_ENVIRONMENT: str = "sandbox"
+    SALESFORCE_DOMAIN: Optional[str] = None
+    SALESFORCE_INSTANCE_URL: Optional[str] = None
     SALESFORCE_USERNAME: Optional[str] = None
     SALESFORCE_PASSWORD: Optional[str] = None
     SALESFORCE_SECURITY_TOKEN: Optional[str] = None

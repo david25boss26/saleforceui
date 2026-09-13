@@ -13,6 +13,7 @@ from app.api.routes.files import router as files_router
 from app.api.routes.configurations import router as config_router
 from app.api.routes.executions import router as exec_router
 from app.api.routes.jobs import router as jobs_router
+from app.api.routes.salesforce import router as salesforce_router
 
 setup_logging()
 
@@ -47,6 +48,7 @@ app.include_router(files_router, prefix="/api")
 app.include_router(config_router, prefix="/api")
 app.include_router(exec_router, prefix="/api")
 app.include_router(jobs_router, prefix="/api")
+app.include_router(salesforce_router, prefix="/api")
 
 @app.get("/")
 def read_root():

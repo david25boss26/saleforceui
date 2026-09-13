@@ -19,9 +19,10 @@ import {
 } from "lucide-react";
 import apiService from "./services/api";
 import type { Pipeline, ETLExecution, ConfigData } from "./types";
+import SalesforceQueryExplorer from "./components/SalesforceQueryExplorer";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "pipelines" | "history" | "errors" | "config">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "pipelines" | "query" | "history" | "errors" | "config">("dashboard");
   
   // Health State
   const [health, setHealth] = useState({ status: "loading", database: "loading", salesforce: "loading", scheduler: "loading" });
@@ -278,6 +279,16 @@ export default function App() {
           >
             <Clock className="h-4 w-4" />
             <span>Pipelines & Run</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("query")}
+            className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition ${
+              activeTab === "query" ? "bg-sky-600/10 text-sky-400 border-l-2 border-sky-500" : "hover:bg-slate-800 text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Database className="h-4 w-4" />
+            <span>SOQL Query & Export</span>
           </button>
 
           <button
@@ -843,6 +854,11 @@ export default function App() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* VIEW: SOQL QUERY & EXPORT */}
+          {activeTab === "query" && (
+            <SalesforceQueryExplorer />
           )}
 
           {/* VIEW: YAML CONFIG */}
